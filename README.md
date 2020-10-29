@@ -4,7 +4,6 @@ Graphical frontend to wpa_supplicant
 # In Action
 
 ![Alt text](in_action.png?raw=true "running under Artix Linux and dwm")
-`
 
 # Getting it running in your system
 * must have python-3.x installed
