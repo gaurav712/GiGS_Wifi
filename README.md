@@ -4,11 +4,12 @@ Graphical frontend to wpa_supplicant
 # In Action
 
 ![Alt text](in_action.png?raw=true "running under Artix Linux and dwm")
+`
 
 # Getting it running in your system
 * must have python-3.x installed
 * must have gobject-introspection-1.0
-    
+
     name of the package depends on your distribution, e.g.
 
     Fedora, CentOS, RHEL: gobject-introspection-devel
@@ -29,14 +30,10 @@ Graphical frontend to wpa_supplicant
 3. `killall`
 4. `rfkill`
 
-# USAGE
- `python main.py`
-
 # NOTES
 It's still a work in progress, things you can't do:
 * Can't connect to a network.
 * Refresh button still needs binding to a function.
-* Needs asynchronous implementation to make GUI and backend independent.
 
 # LICENSE
 Licensed under MIT License
