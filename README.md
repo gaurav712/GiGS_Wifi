@@ -33,7 +33,7 @@ Graphical frontend to wpa_supplicant
 # NOTES
 It's still a work in progress, things you can't do:
 * Can't connect to a network.
-* Refresh button still needs binding to a function.
+* Make it work without superuser privileges
 
 # LICENSE
 Licensed under MIT License

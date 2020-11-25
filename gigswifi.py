@@ -63,6 +63,7 @@ class MainWindow(Gtk.Window):
 
         # Add a refresh button(to refresh available networks' list)
         self.refresh_button = Gtk.Button()
+        self.refresh_button.connect('clicked', self.refresh_button_clicked) # attatch to a function
         self.wifi_state_section_box.pack_end(self.refresh_button, False, False, DEFAULT_PADDING)  # add it to wifi_state_section_box
         self.refresh_button.set_label(REFRESH_BUTTON_LABEL)
 
@@ -100,8 +101,16 @@ class MainWindow(Gtk.Window):
     def refresh_network_list(self):
         if check_wlan_state():  # Make sure wifi is enabled
             # Search for networks and add to the list (if available)
-            refreshNetworkThread = RefreshNetworkThread(self, self.interface, self.network_list)
+            refreshNetworkThread = RefreshNetworkThread(self.interface, self.network_list)
             refreshNetworkThread.start()
+
+    def refresh_button_clicked(self, button):
+        # Remove all the existing rows from the listbox
+        for row in self.network_list:
+            self.network_list.remove(row)
+
+        # Reload the networks
+        self.refresh_network_list()
 
 # Get wifi interface
 def get_wifi_interface():

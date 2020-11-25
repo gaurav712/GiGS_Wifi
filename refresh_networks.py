@@ -13,7 +13,7 @@ SCAN_RESULTS_CMD = "sudo wpa_cli -i DEV_NAME scan_results | cut -f4- \
 WPA_SUPPL_CMD = "sudo wpa_supplicant -D nl80211 -i DEV_NAME -C /run/wpa_supplicant -B"
 
 NETWORK_LIST_PADDING = 10
-SEARCH_DURATION = 4 # in seconds
+SEARCH_DURATION = 5 # in seconds
 
 class Network():
 
@@ -45,12 +45,11 @@ class Network():
 
 # Thread to refresh networks list
 class RefreshNetworkThread(Thread):
-    def __init__(self, main_window, interface, list_box):
+    def __init__(self, interface, list_box):
         Thread.__init__(self)
 
         self.interface = interface
         self.list_box = list_box
-        self.main_window = main_window
 
     def run(self):
         # Check if wpa_supplicant is running
@@ -76,7 +75,7 @@ class RefreshNetworkThread(Thread):
             Network(self.list_box, self.network.split('|')[1], self.protection)
 
             # Refresh the window
-            self.main_window.show_all()
+            self.list_box.show_all()
 
 # Kill wpa_supplicant if it's already running and (re)start it
 def start_wpa_supplicant(interface):
