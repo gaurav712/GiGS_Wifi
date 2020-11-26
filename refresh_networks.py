@@ -2,7 +2,7 @@ from threading import Thread
 from time import sleep
 from subprocess import check_output, run, CalledProcessError
 import gi
-gi.require_version("Gtk", "3.0")
+gi.require_version("Gtk", '3.0')
 from gi.repository import Gtk
 
 # Globals
@@ -40,8 +40,13 @@ class Network():
 
         # add the box to the root widget
         self.list_box_row = Gtk.ListBoxRow()
+        self.list_box_row.connect('activate', self.connect_to_the_network)
         self.list_box_row.add(self.box)
         parent_list_box.add(self.list_box_row)
+
+    def connect_to_the_network(self, list_box_row):
+        # Just a basic structure for now
+        print(self.ssid_label.get_label())
 
 # Thread to refresh networks list
 class RefreshNetworkThread(Thread):

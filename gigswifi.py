@@ -6,7 +6,9 @@ from subprocess import check_output, run
 from sys import stderr
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk
+from threading import Thread
+from time import sleep
 
 from refresh_networks import RefreshNetworkThread, Network
 
@@ -30,7 +32,7 @@ class MainWindow(Gtk.Window):
         self.interface = interface
 
         Gtk.Window.__init__(self, title = "Available Networks")
-        self.connect("destroy", Gtk.main_quit)
+        self.connect("destroy", self.close_root_window)
 
         self.set_size_request(360, 360)
         self.set_position(Gtk.WindowPosition.CENTER)    # place it in center
@@ -55,11 +57,9 @@ class MainWindow(Gtk.Window):
         self.wifi_state_section_box.pack_end(self.wifi_state_switch, False, False, DEFAULT_PADDING) # add to wifi_state_section_box
         self.wifi_state_switch.connect("notify::active", self.toggle_wifi_switch)
 
-        # Set switch's initial state
-        self.refresh_state(self.wifi_state_switch)
-
-        # toggle switch automatically every two seconds (in case if wifi state is toggled externally)
-        GLib.timeout_add(2000, self.refresh_state, self.wifi_state_switch)
+        # Spawn a thread to toggle switch automatically (in case if wifi state is toggled externally)
+        self.refresh_toggle_switch_thread = RefreshToggleSwitchState(self.wifi_state_switch)
+        self.refresh_toggle_switch_thread.start()
 
         # Add a refresh button(to refresh available networks' list)
         self.refresh_button = Gtk.Button()
@@ -77,26 +77,12 @@ class MainWindow(Gtk.Window):
         # Scan on startup
         self.refresh_network_list()
 
-        # List the available networks
-        # GLib.timeout_add(100, self.refresh_network_list, network_list)
-        # GLib.timeout_add(5000, self.refresh_window)
-
     # Toggle wifi on/off
     def toggle_wifi_switch(self, switch, gparam):
         if switch.get_active():
             run(WLAN_TURN_ON_CMD, shell=True)
         else:
             run(WLAN_TURN_OFF_CMD, shell=True)
-
-    def refresh_state(self, wifi_state_switch):
-
-        # Set the switch according to current wlan state
-        if check_wlan_state():
-            wifi_state_switch.set_active(True)
-        else:
-            wifi_state_switch.set_active(False)
-
-        return True
 
     def refresh_network_list(self):
         if check_wlan_state():  # Make sure wifi is enabled
@@ -111,6 +97,31 @@ class MainWindow(Gtk.Window):
 
         # Reload the networks
         self.refresh_network_list()
+
+    def close_root_window(self, signal):
+        self.refresh_toggle_switch_thread.terminate()
+        Gtk.main_quit()
+
+# Thread to refresh the toggle switch
+class RefreshToggleSwitchState(Thread):
+
+    def __init__(self, wifi_state_switch):
+        Thread.__init__(self)
+
+        self.should_terminate = False
+        self.wifi_state_switch = wifi_state_switch
+
+    def run(self):
+        while(not self.should_terminate):
+            if check_wlan_state() and not self.wifi_state_switch.get_active():
+                self.wifi_state_switch.set_active(True)
+            elif not check_wlan_state() and self.wifi_state_switch.get_active():
+                self.wifi_state_switch.set_active(False)
+
+            sleep(0.5)
+
+    def terminate(self):
+        self.should_terminate = True
 
 # Get wifi interface
 def get_wifi_interface():
