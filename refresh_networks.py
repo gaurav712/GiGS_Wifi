@@ -6,11 +6,11 @@ gi.require_version("Gtk", '3.0')
 from gi.repository import Gtk
 
 # Globals
-WPA_SUPPL_TERM_CMD = "sudo killall wpa_supplicant"
-SCAN_CMD = "sudo wpa_cli -i DEV_NAME scan 2> /dev/null"
-SCAN_RESULTS_CMD = "sudo wpa_cli -i DEV_NAME scan_results | cut -f4- \
+# WPA_SUPPL_TERM_CMD = "sudo killall wpa_supplicant"
+SCAN_CMD = "wpa_cli -i DEV_NAME scan 2> /dev/null"
+SCAN_RESULTS_CMD = "wpa_cli -i DEV_NAME scan_results | cut -f4- \
 | sed -e 1d -e 's/\\[WPA2-.*\\]/(WPA2)/g' -e 's/\\[ESS\\]//g' -e 's/\t/|/g' -e 's/\\[WPA-.*\\]/(WPA)/g'"
-WPA_SUPPL_CMD = "sudo wpa_supplicant -D nl80211 -i DEV_NAME -C /run/wpa_supplicant -B"
+WPA_SUPPL_CMD = "sudo wpa_supplicant -D nl80211 -i DEV_NAME -C \"DIR=/var/run/wpa_supplicant GROUP=wheel\" -B"
 
 NETWORK_LIST_PADDING = 10
 SEARCH_DURATION = 5 # in seconds
@@ -84,8 +84,8 @@ class RefreshNetworkThread(Thread):
 
 # Kill wpa_supplicant if it's already running and (re)start it
 def start_wpa_supplicant(interface):
-    run(WPA_SUPPL_TERM_CMD, shell=True)
-    sleep(0.3)  # to make sure wpa_supplicant is no longer running
+    # run(WPA_SUPPL_TERM_CMD, shell=True)
+    # sleep(0.3)  # to make sure wpa_supplicant is no longer running
     run(WPA_SUPPL_CMD.replace("DEV_NAME", interface, 1), shell=True)
 
 def scan_for_networks(interface):

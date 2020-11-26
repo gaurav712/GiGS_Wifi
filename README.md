@@ -26,7 +26,6 @@ Graphical frontend to wpa_supplicant
 
 * these binaries must be whitelisted in sudoers file (so it doesn't prompt for password):
 1. `wpa_supplicant`
-2. `wpa_cli`
 3. `killall`
 4. `rfkill`
 

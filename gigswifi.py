@@ -74,15 +74,15 @@ class MainWindow(Gtk.Window):
         self.network_list = Gtk.ListBox()
         self.network_list_section.add(self.network_list)  # add it to the ScrolledWindow
 
-        # Scan on startup
-        self.refresh_network_list()
-
     # Toggle wifi on/off
     def toggle_wifi_switch(self, switch, gparam):
         if switch.get_active():
             run(WLAN_TURN_ON_CMD, shell=True)
+            print('turned on')
+            self.refresh_network_list()
         else:
             run(WLAN_TURN_OFF_CMD, shell=True)
+            self.clear_listbox()
 
     def refresh_network_list(self):
         if check_wlan_state():  # Make sure wifi is enabled
@@ -91,12 +91,16 @@ class MainWindow(Gtk.Window):
             refreshNetworkThread.start()
 
     def refresh_button_clicked(self, button):
-        # Remove all the existing rows from the listbox
-        for row in self.network_list:
-            self.network_list.remove(row)
+        # Clear listbox
+        self.clear_listbox()
 
         # Reload the networks
         self.refresh_network_list()
+
+    def clear_listbox(self):
+        # Remove all the existing rows from the listbox
+        for row in self.network_list:
+            self.network_list.remove(row)
 
     def close_root_window(self, signal):
         self.refresh_toggle_switch_thread.terminate()
