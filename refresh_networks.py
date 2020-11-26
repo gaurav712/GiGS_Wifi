@@ -1,5 +1,6 @@
 from threading import Thread
 from time import sleep
+from os import getenv
 from subprocess import check_output, run, CalledProcessError
 import gi
 gi.require_version("Gtk", '3.0')
@@ -7,10 +8,11 @@ from gi.repository import Gtk
 
 # Globals
 # WPA_SUPPL_TERM_CMD = "sudo killall wpa_supplicant"
+DEFAULT_CONF_FILE = "/.local/gigswifi-wpa_supplicant.conf"
 SCAN_CMD = "wpa_cli -i DEV_NAME scan 2> /dev/null"
 SCAN_RESULTS_CMD = "wpa_cli -i DEV_NAME scan_results | cut -f4- \
 | sed -e 1d -e 's/\\[WPA2-.*\\]/(WPA2)/g' -e 's/\\[ESS\\]//g' -e 's/\t/|/g' -e 's/\\[WPA-.*\\]/(WPA)/g'"
-WPA_SUPPL_CMD = "sudo wpa_supplicant -D nl80211 -i DEV_NAME -C \"DIR=/var/run/wpa_supplicant GROUP=wheel\" -B"
+WPA_SUPPL_CMD = "sudo wpa_supplicant -D nl80211 -i DEV_NAME -c " + getenv('HOME') + DEFAULT_CONF_FILE + " -B"
 
 NETWORK_LIST_PADDING = 10
 SEARCH_DURATION = 5 # in seconds
@@ -50,11 +52,14 @@ class Network():
 
 # Thread to refresh networks list
 class RefreshNetworkThread(Thread):
-    def __init__(self, interface, list_box):
+    def __init__(self, interface, list_box, refresh_button):
         Thread.__init__(self)
 
         self.interface = interface
         self.list_box = list_box
+        self.refresh_button = refresh_button
+
+        self.refresh_button.set_visible(False)  # hide it when searching for networks
 
     def run(self):
         # Check if wpa_supplicant is running
@@ -81,6 +86,9 @@ class RefreshNetworkThread(Thread):
 
             # Refresh the window
             self.list_box.show_all()
+
+            # Now reveal the refresh button
+            self.refresh_button.set_visible(True)
 
 # Kill wpa_supplicant if it's already running and (re)start it
 def start_wpa_supplicant(interface):

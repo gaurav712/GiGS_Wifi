@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-from os import listdir
-from os.path import isfile, isdir, join
+from os import listdir, getenv
+from os.path import isfile, isdir, join, exists
 from subprocess import check_output, run
 from sys import stderr
 import gi
@@ -10,7 +10,10 @@ from gi.repository import Gtk
 from threading import Thread
 from time import sleep
 
-from refresh_networks import RefreshNetworkThread, Network
+from refresh_networks import RefreshNetworkThread, Network, DEFAULT_CONF_FILE
+
+# Default Configuration
+DEFAULT_CONF = "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=wheel\nupdate_config=1\n"
 
 # Globals
 WLAN_TURN_OFF_CMD = "sudo rfkill block wifi"
@@ -78,16 +81,17 @@ class MainWindow(Gtk.Window):
     def toggle_wifi_switch(self, switch, gparam):
         if switch.get_active():
             run(WLAN_TURN_ON_CMD, shell=True)
-            print('turned on')
+            self.refresh_button.set_visible(True)   # reveal refresh button
             self.refresh_network_list()
         else:
             run(WLAN_TURN_OFF_CMD, shell=True)
+            self.refresh_button.set_visible(False)  # hide refresh button
             self.clear_listbox()
 
     def refresh_network_list(self):
         if check_wlan_state():  # Make sure wifi is enabled
             # Search for networks and add to the list (if available)
-            refreshNetworkThread = RefreshNetworkThread(self.interface, self.network_list)
+            refreshNetworkThread = RefreshNetworkThread(self.interface, self.network_list, self.refresh_button)
             refreshNetworkThread.start()
 
     def refresh_button_clicked(self, button):
@@ -148,6 +152,12 @@ def check_wlan_state():
     return False
 
 ############# MAIN ##############
+
+# Check if default configuration exists
+if not exists(getenv('HOME') + DEFAULT_CONF_FILE):
+    # Create the file
+    with open(getenv('HOME') + DEFAULT_CONF_FILE, "w") as conf_file:
+        conf_file.write(DEFAULT_CONF)
 
 interface = get_wifi_interface()
 
