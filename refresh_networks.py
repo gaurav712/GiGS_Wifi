@@ -6,6 +6,8 @@ import gi
 gi.require_version("Gtk", '3.0')
 from gi.repository import Gtk
 
+from password_entry_popup import PasswordEntry
+
 # Globals
 # WPA_SUPPL_TERM_CMD = "sudo killall wpa_supplicant"
 DEFAULT_CONF_FILE = "/.local/gigswifi-wpa_supplicant.conf"  # with $HOME prefixed to it
@@ -18,6 +20,12 @@ CONNECT_CMD = "wpa_cli -i DEV_NAME enable_network "
 DISCONNECT_CMD = "wpa_cli -i DEV_NAME disable_network "
 GET_CURRENT_NETWORK_CMD = "wpa_cli -i DEV_NAME list_networks | grep CURRENT | cut -f1"
 
+ADD_NETWORK_CMD = "wpa_cli -i DEV_NAME add_network"
+SET_SSID_CMD = "wpa_cli -i DEV_NAME set_network NETWORK_NUM ssid \'\"SSID\"\'"
+SET_PSK_CMD = "wpa_cli -i DEV_NAME set_network NETWORK_NUM psk \'\"PSK\"\'"
+SET_NO_KEY_CMD = "wpa_cli -i DEV_NAME set_network NETWORK_NUM key_mgmt NONE"
+SAVE_CONFIG_CMD = "wpa_cli -i DEV_NAME save_config"
+
 NETWORK_LIST_PADDING = 10
 SEARCH_DURATION = 5 # in seconds
 
@@ -29,6 +37,7 @@ class Network():
     def __init__(self, parent_list_box, ssid, protection, interface):
 
         self.ssid = ssid
+        self.protection = protection
         self.interface = interface
 
         # Add a box
@@ -45,7 +54,7 @@ class Network():
 
         if protection is not None:
             self.protection_label = Gtk.Label()
-            self.protection_label.set_text(protection)
+            self.protection_label.set_text(self.protection)
 
             # Add it to the box
             self.box.pack_end(self.protection_label, False, False, NETWORK_LIST_PADDING)
@@ -57,22 +66,61 @@ class Network():
         parent_list_box.add(self.list_box_row)
 
     def connect_to_the_network(self, list_box_row):
+        # Connect to self.ssid
+
         # Check if it's already saved
         for network in networks:
+
+            # Check if device is already connected to a network
+            # and it is not the one user just selected. If it's not,
+            # disconnect from the already connected network
+            if connected_network is not None and connected_network is not network:
+                self.disconnect()
+
             if self.ssid == networks[network]:
-                # Connect to self.ssid
-
-                # Check if device is already connected to a network
-                # and it is not the one user just selected. If it's not,
-                # disconnect from the already connected network
-                if connected_network is not None and connected_network is not network:
-                    run(DISCONNECT_CMD.replace("DEV_NAME", self.interface, 1) + connected_network, shell = True)
-
                 # now connect
-                run(CONNECT_CMD.replace("DEV_NAME", self.interface, 1) + network, shell = True)
+                self.get_connected(network)
                 return  # return, now that it is connected!
 
         # Current network is not saved
+        self.add_network()
+
+    def add_network(self):
+
+        # issue the add_network command
+        network_number = str(check_output(ADD_NETWORK_CMD.replace("DEV_NAME", self.interface, 1), shell = True).decode().strip())
+
+        # set the ssid
+        run(SET_SSID_CMD.replace("DEV_NAME", self.interface, 1).replace("NETWORK_NUM", network_number, 1).replace("SSID", self.ssid, 1), shell = True)
+
+        # set the password
+        # Check if network has any protection
+        if self.protection == 'none':   # no protection
+            run(SET_NO_KEY_CMD.replace("DEV_NAME", self.interface, 1).replace("NETWORK_NUM", network_number, 1), shell = True)
+            self.get_connected(network_number)
+            self.save_config()  # Save it to the config
+        else:   # it is protected
+
+            # Get the password
+            if connected_network is None:
+                disconnect_callback = None
+            else:
+                disconnect_callback = self.disconnect
+
+            passwordWindow = PasswordEntry(self.ssid, self.add_psk, disconnect_callback, self.get_connected, network_number, self.save_config)
+            passwordWindow.show_all()
+
+    def add_psk(self, password, network_num):
+        run(SET_PSK_CMD.replace("DEV_NAME", self.interface, 1).replace("NETWORK_NUM", network_num, 1).replace("PSK", password, 1), shell = True)
+
+    def disconnect(self):
+        run(DISCONNECT_CMD.replace("DEV_NAME", self.interface, 1) + connected_network, shell = True)
+
+    def get_connected(self, network_num):
+        run(CONNECT_CMD.replace("DEV_NAME", self.interface, 1) + network_num, shell = True)
+
+    def save_config(self):
+        run(SAVE_CONFIG_CMD.replace("DEV_NAME", self.interface, 1), shell = True)
 
 # Thread to refresh networks list
 class RefreshNetworkThread(Thread):

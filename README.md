@@ -29,8 +29,11 @@ Graphical frontend to wpa_supplicant
 4. `rfkill`
 
 # TODO
-* Connect to unknown networks
 * Help users add binaries to the sudoers
+* Make it able to modify networks in the config
+* Better error handling
+* Make the UI fluid
+* Add to PyPI
 
 # LICENSE
 Licensed under MIT License

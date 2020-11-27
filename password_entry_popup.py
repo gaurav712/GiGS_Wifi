@@ -6,13 +6,18 @@ PADDING = 20
 
 class PasswordEntry(Gtk.Window):
 
-    password = None
-
-    def __init__(self, ssid):
+    def __init__(self, ssid, add_psk, disconnect, get_connected, network_num, save_config):
         Gtk.Window.__init__(self, title = 'Enter password for ' + ssid)
         self.connect('destroy', self.close_window)
 
         self.set_position(Gtk.WindowPosition.CENTER)    # place it in center
+
+        # Initialize necessary values
+        self.disconnect = disconnect
+        self.add_psk = add_psk
+        self.get_connected = get_connected
+        self.network_num = network_num
+        self.save_config = save_config
 
         # Box for entry and buttons
         self.parent_box = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
@@ -45,7 +50,15 @@ class PasswordEntry(Gtk.Window):
 
     def submit_password(self, submit):
         self.password = self.entry_box.get_text()
-        self.close_window()
+        if self.password is None:
+            print('No password entered')
+        else:
+            if self.disconnect is not None:
+                self.disconnect()
+            self.add_psk(self.password, self.network_num)
+            self.get_connected(self.network_num)
+            self.save_config()
+            self.close_window()
 
     def cancel_entry(self, cancel_button):
         print('Cancelled password entry!')
