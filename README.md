@@ -26,13 +26,11 @@ Graphical frontend to wpa_supplicant
 
 * these binaries must be whitelisted in sudoers file (so it doesn't prompt for password):
 1. `wpa_supplicant`
-3. `killall`
 4. `rfkill`
 
-# NOTES
-It's still a work in progress, things you can't do:
-* Can't connect to a network.
-* Make it work without superuser privileges
+# TODO
+* Connect to unknown networks
+* Help users add binaries to the sudoers
 
 # LICENSE
 Licensed under MIT License
