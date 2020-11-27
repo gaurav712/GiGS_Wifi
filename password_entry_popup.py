@@ -10,7 +10,7 @@ class PasswordEntry(Gtk.Window):
 
     def __init__(self, ssid):
         Gtk.Window.__init__(self, title = 'Enter password for ' + ssid)
-        self.connect('destroy', Gtk.main_quit)
+        self.connect('destroy', self.close_window)
 
         self.set_position(Gtk.WindowPosition.CENTER)    # place it in center
 
@@ -45,18 +45,11 @@ class PasswordEntry(Gtk.Window):
 
     def submit_password(self, submit):
         self.password = self.entry_box.get_text()
-        Gtk.main_quit()
+        self.close_window()
 
     def cancel_entry(self, cancel_button):
         print('Cancelled password entry!')
-        Gtk.main_quit()
+        self.close_window()
 
-passwordEntry = PasswordEntry('Wifi Network')
-passwordEntry.show_all()
-Gtk.main()
-
-if passwordEntry.password is not None:
-    print(passwordEntry.password)
-else:
-    print('Password wasn\'t entered')
-del passwordEntry
+    def close_window(self, signal = None):
+        self.destroy()
