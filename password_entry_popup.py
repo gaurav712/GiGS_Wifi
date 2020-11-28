@@ -9,7 +9,7 @@ PADDING = 20
 
 class PasswordEntry(Gtk.Window):
 
-    def __init__(self, interface, ssid, add_psk, disconnect, get_connected, network_num, save_config):
+    def __init__(self, interface, ssid, add_psk, disconnect, get_connected, network_num, save_config, update_connected_network):
         Gtk.Window.__init__(self, title = 'Enter password for ' + ssid)
         self.connect('destroy', self.close_window)
 
@@ -22,6 +22,7 @@ class PasswordEntry(Gtk.Window):
         self.get_connected = get_connected
         self.network_num = network_num
         self.save_config = save_config
+        self.update_connected_network = update_connected_network
 
         # Box for entry and buttons
         self.parent_box = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
@@ -61,14 +62,15 @@ class PasswordEntry(Gtk.Window):
                 self.disconnect()
             self.add_psk(self.password, self.network_num)
             self.get_connected(self.network_num)
+            self.update_connected_network(self.network_num)
             self.save_config()
             self.close_window()
 
     def cancel_entry(self, cancel_button):
         print('Cancelled password entry!')
+        # Remove the dummy network that was added
+        run(CANCEL_ADDING_NETWORK_CMD.replace("DEV_NAME", self.interface, 1).replace("NETWORK_NUM", self.network_num, 1), shell = True)
         self.close_window()
 
     def close_window(self, signal = None):
-        # Remove the dummy network that was added
-        run(CANCEL_ADDING_NETWORK_CMD.replace("DEV_NAME", self.interface, 1).replace("NETWORK_NUM", self.network_num, 1), shell = True)
         self.destroy()  # now exit
