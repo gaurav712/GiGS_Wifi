@@ -1,18 +1,22 @@
 import gi
 gi.require_version("Gtk", '3.0')
 from gi.repository import Gtk
+from subprocess import run
+
+CANCEL_ADDING_NETWORK_CMD = "wpa_cli -i DEV_NAME remove_network NETWORK_NUM"
 
 PADDING = 20
 
 class PasswordEntry(Gtk.Window):
 
-    def __init__(self, ssid, add_psk, disconnect, get_connected, network_num, save_config):
+    def __init__(self, interface, ssid, add_psk, disconnect, get_connected, network_num, save_config):
         Gtk.Window.__init__(self, title = 'Enter password for ' + ssid)
         self.connect('destroy', self.close_window)
 
         self.set_position(Gtk.WindowPosition.CENTER)    # place it in center
 
         # Initialize necessary values
+        self.interface = interface
         self.disconnect = disconnect
         self.add_psk = add_psk
         self.get_connected = get_connected
@@ -65,4 +69,6 @@ class PasswordEntry(Gtk.Window):
         self.close_window()
 
     def close_window(self, signal = None):
-        self.destroy()
+        # Remove the dummy network that was added
+        run(CANCEL_ADDING_NETWORK_CMD.replace("DEV_NAME", self.interface, 1).replace("NETWORK_NUM", self.network_num, 1), shell = True)
+        self.destroy()  # now exit

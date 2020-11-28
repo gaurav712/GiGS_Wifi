@@ -107,7 +107,7 @@ class Network():
             else:
                 disconnect_callback = self.disconnect
 
-            passwordWindow = PasswordEntry(self.ssid, self.add_psk, disconnect_callback, self.get_connected, network_number, self.save_config)
+            passwordWindow = PasswordEntry(self.interface, self.ssid, self.add_psk, disconnect_callback, self.get_connected, network_number, self.save_config)
             passwordWindow.show_all()
 
     def add_psk(self, password, network_num):
