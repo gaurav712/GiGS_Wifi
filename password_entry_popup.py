@@ -62,7 +62,7 @@ class PasswordEntry(Gtk.Window):
                 self.disconnect()
             self.add_psk(self.password, self.network_num)
             self.get_connected(self.network_num)
-            self.update_connected_network(self.network_num)
+            self.update_connected_network()
             self.save_config()
             self.close_window()
 

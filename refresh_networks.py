@@ -122,9 +122,12 @@ class Network():
     def save_config(self):
         run(SAVE_CONFIG_CMD.replace("DEV_NAME", self.interface, 1), shell = True)
 
-    def update_connnected_network(self, new_connected_network):
-        global connected_network
-        connected_network = new_connected_network
+    def update_connnected_network(self):
+        # Update connected_network
+        get_current_network(self.interface)
+
+        # Update networks as well
+        get_saved_networks(self.interface)
 
 # Thread to refresh networks list
 class RefreshNetworkThread(Thread):
