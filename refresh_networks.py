@@ -17,8 +17,8 @@ SCAN_RESULTS_CMD = "wpa_cli -i DEV_NAME scan_results | cut -f4- \
 WPA_SUPPL_CMD = "sudo wpa_supplicant -D nl80211 -i DEV_NAME -c " + getenv('HOME') + DEFAULT_CONF_FILE + " -B"
 LIST_NETWORKS_CMD = "wpa_cli -i DEV_NAME list_networks | sed -e 1d | cut -f2"
 CONNECT_CMD = "wpa_cli -i DEV_NAME enable_network "
-DISCONNECT_CMD = "wpa_cli -i DEV_NAME disable_network "
-GET_CURRENT_NETWORK_CMD = "wpa_cli -i DEV_NAME list_networks | grep CURRENT | cut -f1"
+DISABLE_CMD = "wpa_cli -i DEV_NAME disable_network "
+GET_CURRENT_NETWORK_CMD = "wpa_cli -i DEV_NAME list_networks | grep CURRENT | cut -f2"
 
 ADD_NETWORK_CMD = "wpa_cli -i DEV_NAME add_network"
 SET_SSID_CMD = "wpa_cli -i DEV_NAME set_network NETWORK_NUM ssid \'\"SSID\"\'"
@@ -68,22 +68,24 @@ class Network():
     def connect_to_the_network(self, list_box_row):
         # Connect to self.ssid
 
-        # Check if it's already saved
+        # Disable other networks
         for network in networks:
+            if self.ssid is not networks[network]:
+                self.disable(network)
 
-            # Check if device is already connected to a network
-            # and it is not the one user just selected. If it's not,
-            # disconnect from the already connected network
-            if connected_network is not None and connected_network is not network:
-                self.disconnect()
+        # Get self.ssid's index in networks
+        for network in networks:
+            if networks[network] == self.ssid:
+                network_num = network
+                break
 
-            if self.ssid == networks[network]:
-                # now connect
-                self.get_connected(network)
-                return  # return, now that it is connected!
-
-        # Current network is not saved
-        self.add_network(network)
+        # Check if it's already saved
+        if self.ssid in networks.values():
+            # Current network is saved
+            self.get_connected(network_num)
+        else:
+            # Current network is not saved
+            self.add_network(network)
 
     def add_network(self, network):
 
@@ -103,20 +105,20 @@ class Network():
 
             # Get the password
             if connected_network is None:
-                disconnect_callback = None
+                disable_callback = None
             else:
-                disconnect_callback = self.disconnect
+                disable_callback = self.disable
 
             # If the network is not saved
             if network not in networks.values():
-                passwordWindow = PasswordEntry(self.interface, self.ssid, self.add_psk, disconnect_callback, self.get_connected, network_number, self.save_config, self.update_connnected_network)
+                passwordWindow = PasswordEntry(self.interface, self.ssid, self.add_psk, disable_callback, self.get_connected, network_number, self.save_config, self.update_connnected_network)
                 passwordWindow.show_all()
 
     def add_psk(self, password, network_num):
         run(SET_PSK_CMD.replace("DEV_NAME", self.interface, 1).replace("NETWORK_NUM", network_num, 1).replace("PSK", password, 1), shell = True)
 
-    def disconnect(self):
-        run(DISCONNECT_CMD.replace("DEV_NAME", self.interface, 1) + connected_network, shell = True)
+    def disable(self, network):
+        run(DISABLE_CMD.replace("DEV_NAME", self.interface, 1) + network, shell = True)
 
     def get_connected(self, network_num):
         run(CONNECT_CMD.replace("DEV_NAME", self.interface, 1) + network_num, shell = True)
