@@ -9,7 +9,7 @@ PADDING = 20
 
 class PasswordEntry(Gtk.Window):
 
-    def __init__(self, interface, ssid, add_psk, disconnect, get_connected, network_num, save_config, update_connected_network):
+    def __init__(self, interface, ssid, add_psk, get_connected, network_num, save_config, update_connected_network):
         Gtk.Window.__init__(self, title = 'Enter password for ' + ssid)
         self.connect('destroy', self.close_window)
 
@@ -17,7 +17,6 @@ class PasswordEntry(Gtk.Window):
 
         # Initialize necessary values
         self.interface = interface
-        self.disconnect = disconnect
         self.add_psk = add_psk
         self.get_connected = get_connected
         self.network_num = network_num
@@ -58,8 +57,6 @@ class PasswordEntry(Gtk.Window):
         if self.password is None:
             print('No password entered')
         else:
-            if self.disconnect is not None:
-                self.disconnect()
             self.add_psk(self.password, self.network_num)
             self.get_connected(self.network_num)
             self.update_connected_network()

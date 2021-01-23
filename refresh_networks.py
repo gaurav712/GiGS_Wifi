@@ -26,6 +26,8 @@ SET_PSK_CMD = "wpa_cli -i DEV_NAME set_network NETWORK_NUM psk \'\"PSK\"\'"
 SET_NO_KEY_CMD = "wpa_cli -i DEV_NAME set_network NETWORK_NUM key_mgmt NONE"
 SAVE_CONFIG_CMD = "wpa_cli -i DEV_NAME save_config"
 
+LIST_DISABLED_NETWORKS_CMD = "wpa_cli -i DEV_NAME list_networks | grep DISABLED | cut -f1"
+
 NETWORK_LIST_PADDING = 10
 SEARCH_DURATION = 5 # in seconds
 
@@ -104,14 +106,10 @@ class Network():
         else:   # it is protected
 
             # Get the password
-            if connected_network is None:
-                disable_callback = None
-            else:
-                disable_callback = self.disable
 
             # If the network is not saved
             if network not in networks.values():
-                passwordWindow = PasswordEntry(self.interface, self.ssid, self.add_psk, disable_callback, self.get_connected, network_number, self.save_config, self.update_connnected_network)
+                passwordWindow = PasswordEntry(self.interface, self.ssid, self.add_psk, self.get_connected, network_number, self.save_config, self.update_connnected_network)
                 passwordWindow.show_all()
 
     def add_psk(self, password, network_num):
@@ -124,7 +122,23 @@ class Network():
         run(CONNECT_CMD.replace("DEV_NAME", self.interface, 1) + network_num, shell = True)
 
     def save_config(self):
+
+        #TODO
+        # enable all the networks before saving to config
+        # so that none of them is blacklisted(kind of)
+
+        disabled_networks = check_output(LIST_DISABLED_NETWORKS_CMD.replace("DEV_NAME", self.interface, 1), shell = True).decode().splitlines()
+
+        # now enable all the networks
+        for disabled_network in disabled_networks:
+            run(CONNECT_CMD.replace("DEV_NAME", self.interface, 1) + disabled_network, shell = True)
+
+        # save to config
         run(SAVE_CONFIG_CMD.replace("DEV_NAME", self.interface, 1), shell = True)
+
+        # now disable the networks that were previously disabled
+        for disabled_network in disabled_networks:
+            run(DISABLE_CMD.replace("DEV_NAME", self.interface, 1) + disabled_network, shell = True)
 
     def update_connnected_network(self):
         # Update connected_network
