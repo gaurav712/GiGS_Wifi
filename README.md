@@ -29,6 +29,7 @@ Graphical frontend to wpa_supplicant
 4. `rfkill`
 
 # TODO
+* Switch to something other than GTK
 * Help users add binaries to the sudoers
 * Make it able to modify networks in the config
 * Better error handling
