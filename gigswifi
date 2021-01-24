@@ -20,7 +20,7 @@ WLAN_TURN_OFF_CMD = "sudo rfkill block wifi"
 WLAN_TURN_ON_CMD = "sudo rfkill unblock wifi"
 NET_DEVICES_DIR = "/sys/class/net"
 DEV_TYPE_CMD = "cat /sys/class/net/DEV_NAME/uevent | head -n 1 | cut -d'=' -f2"
-RFKILL_DEV_NAME_CMD = "grep wlan /sys/class/rfkill/*/type | head -n 1 | cut -d':' -f1 | grep -o rfkill[0-9]"
+RFKILL_DEV_NAME_CMD = "grep -l wlan /sys/class/rfkill/*/type | head -n 1 | grep -o rfkill[0-9]"
 WLAN_STATE_CMD = "cat /sys/class/rfkill/RFKILL_DEV_NAME/state"
 
 DEFAULT_PADDING = 10
