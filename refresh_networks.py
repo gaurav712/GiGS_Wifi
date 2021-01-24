@@ -9,7 +9,6 @@ from gi.repository import Gtk
 from password_entry_popup import PasswordEntry
 
 # Globals
-# WPA_SUPPL_TERM_CMD = "sudo killall wpa_supplicant"
 DEFAULT_CONF_FILE = "/.local/gigswifi-wpa_supplicant.conf"  # with $HOME prefixed to it
 SCAN_CMD = "wpa_cli -i DEV_NAME scan 2> /dev/null"
 SCAN_RESULTS_CMD = "wpa_cli -i DEV_NAME scan_results | cut -f4- \
@@ -32,7 +31,7 @@ NETWORK_LIST_PADDING = 10
 SEARCH_DURATION = 5 # in seconds
 
 networks = {}   # to store saved networks
-connected_network = None  # stores ssid key of currently active network, None if none
+connected_network = None  # stores ssid of currently active network, None if none
 
 class Network():
 
@@ -181,7 +180,11 @@ class RefreshNetworkThread(Thread):
             else:
                 self.protection = 'none'
             # Now add the entry
-            Network(self.list_box, self.network.split('|')[1], self.protection, self.interface)
+            self.ssid = self.network.split('|')[1]
+            if self.ssid == connected_network:
+                Network(self.list_box, self.ssid + " (Active)", self.protection, self.interface)
+            else:
+                Network(self.list_box, self.ssid, self.protection, self.interface)
 
             # Refresh the window
             self.list_box.show_all()
@@ -191,8 +194,6 @@ class RefreshNetworkThread(Thread):
 
 # Kill wpa_supplicant if it's already running and (re)start it
 def start_wpa_supplicant(interface):
-    # run(WPA_SUPPL_TERM_CMD, shell=True)
-    # sleep(0.3)  # to make sure wpa_supplicant is no longer running
     run(WPA_SUPPL_CMD.replace("DEV_NAME", interface, 1), shell=True)
 
 def scan_for_networks(interface):
