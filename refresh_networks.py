@@ -46,7 +46,10 @@ class Network():
 
         # To show the SSID of the network
         self.ssid_label = Gtk.Label()
-        self.ssid_label.set_text(self.ssid)
+        if self.ssid == connected_network:
+            self.ssid_label.set_text(self.ssid + " (Active)")
+        else:
+            self.ssid_label.set_text(self.ssid)
         self.ssid_label.set_line_wrap(True)
         self.ssid_label.set_xalign(-1)
 
@@ -180,11 +183,7 @@ class RefreshNetworkThread(Thread):
             else:
                 self.protection = 'none'
             # Now add the entry
-            self.ssid = self.network.split('|')[1]
-            if self.ssid == connected_network:
-                Network(self.list_box, self.ssid + " (Active)", self.protection, self.interface)
-            else:
-                Network(self.list_box, self.ssid, self.protection, self.interface)
+            Network(self.list_box, self.network.split('|')[1], self.protection, self.interface)
 
             # Refresh the window
             self.list_box.show_all()
