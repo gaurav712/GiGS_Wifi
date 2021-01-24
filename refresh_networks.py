@@ -123,10 +123,6 @@ class Network():
 
     def save_config(self):
 
-        #TODO
-        # enable all the networks before saving to config
-        # so that none of them is blacklisted(kind of)
-
         disabled_networks = check_output(LIST_DISABLED_NETWORKS_CMD.replace("DEV_NAME", self.interface, 1), shell = True).decode().splitlines()
 
         # now enable all the networks

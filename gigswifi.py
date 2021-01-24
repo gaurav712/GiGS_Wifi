@@ -169,4 +169,9 @@ interface = get_wifi_interface()
 # Draw and show the network selection window
 mainWindow = MainWindow(interface)
 mainWindow.show_all()
+
+# Hide refresh button if wlan is disable on startup
+if not check_wlan_state():
+    mainWindow.refresh_button.set_visible(False)
+
 Gtk.main()
