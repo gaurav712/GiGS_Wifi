@@ -86,9 +86,9 @@ class Network():
             self.get_connected(network_num)
         else:
             # Current network is not saved
-            self.add_network(network)
+            self.add_network()
 
-    def add_network(self, network):
+    def add_network(self):
 
         # issue the add_network command
         network_number = str(check_output(ADD_NETWORK_CMD.replace("DEV_NAME", self.interface, 1), shell = True).decode().strip())
@@ -107,7 +107,7 @@ class Network():
             # Get the password
 
             # If the network is not saved
-            if network not in networks.values():
+            if self.ssid not in networks.values():
                 passwordWindow = PasswordEntry(self.interface, self.ssid, self.add_psk, self.get_connected, network_number, self.save_config, self.update_connnected_network)
                 passwordWindow.show_all()
 
