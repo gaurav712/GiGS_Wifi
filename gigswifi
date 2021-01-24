@@ -23,8 +23,6 @@ DEV_TYPE_CMD = "cat /sys/class/net/DEV_NAME/uevent | head -n 1 | cut -d'=' -f2"
 RFKILL_DEV_NAME_CMD = "grep wlan /sys/class/rfkill/*/type | head -n 1 | cut -d':' -f1 | grep -o rfkill[0-9]"
 WLAN_STATE_CMD = "cat /sys/class/rfkill/RFKILL_DEV_NAME/state"
 
-WPA_SUPPL_TERM_CMD = "wpa_cli -i DEV_NAME terminate"
-
 DEFAULT_PADDING = 10
 NO_PADDING = 0
 REFRESH_BUTTON_LABEL = "Refresh"
@@ -109,9 +107,6 @@ class MainWindow(Gtk.Window):
             self.network_list.remove(row)
 
     def close_root_window(self, signal):
-        # terminate wpa_supplicant if wifi is off
-        if not check_wlan_state():
-            run(WPA_SUPPL_TERM_CMD.replace("DEV_NAME", self.interface), shell=True)
         self.refresh_toggle_switch_thread.terminate()
         Gtk.main_quit()
 
