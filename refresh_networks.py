@@ -147,10 +147,11 @@ class Network():
 
 # Thread to refresh networks list
 class RefreshNetworkThread(Thread):
-    def __init__(self, interface, list_box, refresh_button):
+    def __init__(self, interface, program_state_label, list_box, refresh_button):
         Thread.__init__(self)
 
         self.interface = interface
+        self.program_state_label = program_state_label
         self.list_box = list_box
         self.refresh_button = refresh_button
 
@@ -167,6 +168,9 @@ class RefreshNetworkThread(Thread):
         if not wpa_suppl_is_running(self.interface):
             start_wpa_supplicant(self.interface)    # started wpa_supplicant
             scan_for_networks(self.interface)   # issued the scan command via wpa_cli
+
+        # Unhide the searching label
+        self.program_state_label.set_visible(True)
 
         # Find networks and update the list
         sleep(SEARCH_DURATION)  # to wait for networks to appear
@@ -190,6 +194,9 @@ class RefreshNetworkThread(Thread):
 
         # Now reveal the refresh button
         self.refresh_button.set_visible(True)
+
+        # Hide the searching label
+        self.program_state_label.set_visible(False)
 
 # Kill wpa_supplicant if it's already running and (re)start it
 def start_wpa_supplicant(interface):

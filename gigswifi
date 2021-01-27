@@ -55,6 +55,12 @@ class MainWindow(Gtk.Window):
         self.wifi_state_section_box.pack_start(self.wifi_label, False, False, DEFAULT_PADDING)    # add it to wifi_state_section_box
         self.wifi_label.set_text("WiFi")
 
+        # Label to show when it is searching for networks
+        self.program_state_label = Gtk.Label()
+        self.wifi_state_section_box.pack_start(self.program_state_label, True, False, DEFAULT_PADDING) # add it to wifi_state_section_box
+        self.program_state_label.set_text("Searching ...")
+        self.program_state_label.set_visible(False) # hide it by default
+
         # Add a toggle switch
         self.wifi_state_switch = Gtk.Switch()
         self.wifi_state_section_box.pack_end(self.wifi_state_switch, False, False, DEFAULT_PADDING) # add to wifi_state_section_box
@@ -91,7 +97,7 @@ class MainWindow(Gtk.Window):
     def refresh_network_list(self):
         if check_wlan_state():  # Make sure wifi is enabled
             # Search for networks and add to the list (if available)
-            refreshNetworkThread = RefreshNetworkThread(self.interface, self.network_list, self.refresh_button)
+            refreshNetworkThread = RefreshNetworkThread(self.interface, self.program_state_label, self.network_list, self.refresh_button)
             refreshNetworkThread.start()
 
     def refresh_button_clicked(self, button):
