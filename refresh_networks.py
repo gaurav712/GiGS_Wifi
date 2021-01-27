@@ -185,11 +185,11 @@ class RefreshNetworkThread(Thread):
             # Now add the entry
             Network(self.list_box, self.network.split('|')[1], self.protection, self.interface)
 
-            # Refresh the window
-            self.list_box.show_all()
+        # Refresh the window
+        self.list_box.show_all()
 
-            # Now reveal the refresh button
-            self.refresh_button.set_visible(True)
+        # Now reveal the refresh button
+        self.refresh_button.set_visible(True)
 
 # Kill wpa_supplicant if it's already running and (re)start it
 def start_wpa_supplicant(interface):
