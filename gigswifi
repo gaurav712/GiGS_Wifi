@@ -59,7 +59,6 @@ class MainWindow(Gtk.Window):
         self.program_state_label = Gtk.Label()
         self.wifi_state_section_box.pack_start(self.program_state_label, True, False, DEFAULT_PADDING) # add it to wifi_state_section_box
         self.program_state_label.set_text("Searching ...")
-        self.program_state_label.set_visible(False) # hide it by default
 
         # Add a toggle switch
         self.wifi_state_switch = Gtk.Switch()
@@ -171,8 +170,9 @@ interface = get_wifi_interface()
 mainWindow = MainWindow(interface)
 mainWindow.show_all()
 
-# Hide refresh button if wlan is disable on startup
+# Hide refresh button and searching label if wlan is disable on startup
 if not check_wlan_state():
     mainWindow.refresh_button.set_visible(False)
+    mainWindow.program_state_label.set_visible(False)
 
 Gtk.main()
